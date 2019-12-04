@@ -126,7 +126,7 @@ int CgptPrioritize(CgptPrioritizeParams *params) {
     index = params->set_partition - 1;
     // it must be a kernel
     if (!IsRoot(&drive, PRIMARY, index)) {
-      Error("partition %d is not a CoreOS root\n", params->set_partition);
+      Error("partition %d is not a Flatcar root\n", params->set_partition);
       goto bad;
     }
   }
