@@ -78,6 +78,10 @@ extern const Guid guid_coreos_reserved;
 extern const Guid guid_coreos_resize;
 extern const Guid guid_coreos_rootfs;
 extern const Guid guid_coreos_root_raid;
+extern const Guid guid_flatcar_reserved;
+extern const Guid guid_flatcar_resize;
+extern const Guid guid_flatcar_rootfs;
+extern const Guid guid_flatcar_root_raid;
 extern const Guid guid_mswin_data;
 
 void InitPMBR(struct drive *drive, int secondary);
