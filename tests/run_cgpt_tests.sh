@@ -140,7 +140,7 @@ else
   echo "Test cgpt w/ partition block device"
   rm -f ${DEV}
   $CGPT create -c -s 1000 ${DEV} || error
-  $CGPT add -i 1 -b 40 -s 900 -t coreos-usr -A 0 ${DEV} || error
+  $CGPT add -i 1 -b 40 -s 900 -t flatcar-usr -A 0 ${DEV} || error
   loop=$(losetup -f --show --partscan ${DEV}) || error
   trap "losetup -d ${loop}" EXIT
   loopp1=${loop}p1
@@ -298,8 +298,8 @@ expect_next() {
 
 # Basic state, one good rootfs
 $CGPT create $DEV || error
-$CGPT add -i 1 -t coreos-rootfs -u $ROOT_A -b 100 -s 1 -P 1 -S 1 $DEV || error
-$CGPT add -i 2 -t coreos-rootfs -u $ROOT_B -b 101 -s 1 -P 0 -S 0 $DEV || error
+$CGPT add -i 1 -t flatcar-rootfs -u $ROOT_A -b 100 -s 1 -P 1 -S 1 $DEV || error
+$CGPT add -i 2 -t flatcar-rootfs -u $ROOT_B -b 101 -s 1 -P 0 -S 0 $DEV || error
 expect_next $ROOT_A
 expect_next $ROOT_A
 
@@ -375,20 +375,20 @@ fi
 echo "Test the cgpt prioritize command..."
 
 # Input: sequence of priorities
-# Output: ${DEV} has coreos-rootfs partitions with the given priorities
+# Output: ${DEV} has flatcar-rootfs partitions with the given priorities
 make_pri() {
   local idx=0
   $CGPT create ${DEV}
   for pri in "$@"; do
     idx=$((idx+1))
-    $CGPT add -t coreos-rootfs -l "root$idx" -b $((100 + 2 * $idx)) -s 1 -P $pri ${DEV}
+    $CGPT add -t flatcar-rootfs -l "root$idx" -b $((100 + 2 * $idx)) -s 1 -P $pri ${DEV}
   done
 }
 
 # Output: returns string containing priorities of all kernels
 get_pri() {
   echo $(
-  for idx in $($CGPT find -t coreos-rootfs ${DEV} | sed -e s@${DEV}@@); do
+  for idx in $($CGPT find -t flatcar-rootfs ${DEV} | sed -e s@${DEV}@@); do
     $CGPT show -i $idx -P ${DEV}
   done
   )
@@ -404,7 +404,7 @@ assert_pri() {
 }
 
 
-# no coreos-rootfs at all. This should do nothing.
+# no flatcar-rootfs at all. This should do nothing.
 $CGPT create ${DEV}
 $CGPT add -t rootfs -b 100 -s 1 ${DEV}
 $CGPT prioritize ${DEV}
@@ -421,7 +421,7 @@ assert_pri 2 1 0
 $CGPT prioritize -i 2 ${DEV}
 assert_pri 1 2 0
 
-# lots of coreos-rootfs, all same starting priority, should go to priority 1
+# lots of flatcar-rootfs, all same starting priority, should go to priority 1
 make_pri   8 8 8 8 8 8 8 8 8 8 8 0 0 8
 $CGPT prioritize ${DEV}
 assert_pri 1 1 1 1 1 1 1 1 1 1 1 0 0 1
@@ -513,7 +513,7 @@ else
   # These shoulfd pass
   $CGPT boot ${DEV} >/dev/null || error
   $CGPT show ${DEV} >/dev/null || error
-  $CGPT find -t coreos-rootfs ${DEV} >/dev/null || error
+  $CGPT find -t flatcar-rootfs ${DEV} >/dev/null || error
 
   echo "Done."
 fi
