@@ -607,10 +607,14 @@ const Guid guid_linux_reserved =    GPT_ENT_TYPE_LINUX_RESERVED;
 const Guid guid_efi =               GPT_ENT_TYPE_EFI;
 const Guid guid_bios =              GPT_ENT_TYPE_BIOS;
 const Guid guid_unused =            GPT_ENT_TYPE_UNUSED;
-const Guid guid_coreos_reserved =   GPT_ENT_TYPE_COREOS_RESERVED;
-const Guid guid_coreos_resize =     GPT_ENT_TYPE_COREOS_RESIZE;
-const Guid guid_coreos_rootfs =     GPT_ENT_TYPE_COREOS_ROOTFS;
-const Guid guid_coreos_root_raid =  GPT_ENT_TYPE_COREOS_ROOT_RAID;
+const Guid guid_coreos_reserved =   GPT_ENT_TYPE_FLATCAR_RESERVED;
+const Guid guid_coreos_resize =     GPT_ENT_TYPE_FLATCAR_RESIZE;
+const Guid guid_coreos_rootfs =     GPT_ENT_TYPE_FLATCAR_ROOTFS;
+const Guid guid_coreos_root_raid =  GPT_ENT_TYPE_FLATCAR_ROOT_RAID;
+const Guid guid_flatcar_reserved =  GPT_ENT_TYPE_FLATCAR_RESERVED;
+const Guid guid_flatcar_resize =    GPT_ENT_TYPE_FLATCAR_RESIZE;
+const Guid guid_flatcar_rootfs =    GPT_ENT_TYPE_FLATCAR_ROOTFS;
+const Guid guid_flatcar_root_raid = GPT_ENT_TYPE_FLATCAR_ROOT_RAID;
 const Guid guid_mswin_data =        GPT_ENT_TYPE_MSWIN_DATA;
 
 static struct {
@@ -649,6 +653,13 @@ static struct {
   {&guid_coreos_resize, "coreos-resize", "CoreOS auto-resize"},
   {&guid_coreos_reserved, "coreos-reserved", "CoreOS reserved"},
   {&guid_coreos_root_raid, "coreos-root-raid", "CoreOS RAID containing root"},
+
+  // Flatcar
+  {&guid_flatcar_rootfs, "flatcar-usr", "Alias for flatcar-rootfs"},
+  {&guid_flatcar_rootfs, "flatcar-rootfs", "Flatcar Container Linux rootfs"},
+  {&guid_flatcar_resize, "flatcar-resize", "Flatcar Container Linux auto-resize"},
+  {&guid_flatcar_reserved, "flatcar-reserved", "Flatcar Container Linux reserved"},
+  {&guid_flatcar_root_raid, "flatcar-root-raid", "Flatcar Container Linux RAID containing root"},
 };
 
 /* Resolves human-readable GPT type.
@@ -819,7 +830,8 @@ int IsKernel(struct drive *drive, int secondary, uint32_t index) {
 int IsRoot(struct drive *drive, int secondary, uint32_t index) {
   GptEntry *entry;
   entry = GetEntry(&drive->gpt, secondary, index);
-  return GuidEqual(&entry->type, &guid_coreos_rootfs);
+  return GuidEqual(&entry->type, &guid_coreos_rootfs) ||
+         GuidEqual(&entry->type, &guid_flatcar_rootfs);
 }
 
 
