@@ -100,7 +100,9 @@ void EntryDetails(GptEntry *entry, uint32_t index, int raw) {
   if (!raw) {
     char type[GUID_STRLEN], unique[GUID_STRLEN];
 
-    UTF16ToUTF8(entry->name, sizeof(entry->name) / sizeof(entry->name[0]),
+    uint16_t name[36];
+    memcpy(name, entry->name, sizeof(uint16_t)*36);
+    UTF16ToUTF8(name, sizeof(entry->name) / sizeof(entry->name[0]),
                 label, sizeof(label));
     require(snprintf(contents, sizeof(contents),
                      "Label: \"%s\"", label) < sizeof(contents));
@@ -137,7 +139,9 @@ void EntryDetails(GptEntry *entry, uint32_t index, int raw) {
   } else {
     char type[GUID_STRLEN], unique[GUID_STRLEN];
 
-    UTF16ToUTF8(entry->name, sizeof(entry->name) / sizeof(entry->name[0]),
+    uint16_t name[36];
+    memcpy(name, entry->name, sizeof(uint16_t)*36);
+    UTF16ToUTF8(name, sizeof(entry->name) / sizeof(entry->name[0]),
                 label, sizeof(label));
     require(snprintf(contents, sizeof(contents),
                      "Label: \"%s\"", label) < sizeof(contents));
@@ -232,6 +236,7 @@ int CgptShow(CgptShowParams *params) {
     GptEntry *entry = GetEntry(&drive.gpt, ANY_VALID, index);
     char buf[256];                      // scratch buffer for string conversion
 
+    uint16_t name[36];
     if (params->single_item) {
       switch(params->single_item) {
       case 'b':
@@ -249,7 +254,8 @@ int CgptShow(CgptShowParams *params) {
         printf("%s\n", buf);
         break;
       case 'l':
-        UTF16ToUTF8(entry->name, sizeof(entry->name) / sizeof(entry->name[0]),
+        memcpy(name, entry->name, sizeof(uint16_t)*36);
+        UTF16ToUTF8(name, sizeof(entry->name) / sizeof(entry->name[0]),
                     (uint8_t *)buf, sizeof(buf));
         printf("%s\n", buf);
         break;
