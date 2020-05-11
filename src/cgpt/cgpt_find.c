@@ -113,7 +113,9 @@ static int do_search(CgptFindParams *params, char *fileName) {
         || (params->set_type && GuidEqual(&params->type_guid, &entry->type))) {
       found = 1;
     } else if (params->set_label) {
-      if (CGPT_OK != UTF16ToUTF8(entry->name,
+      uint16_t name[36];
+      memcpy(name, entry->name, sizeof(uint16_t)*36);
+      if (CGPT_OK != UTF16ToUTF8(name,
                                  sizeof(entry->name) / sizeof(entry->name[0]),
                                  (uint8_t *)partlabel, sizeof(partlabel))) {
         Error("The label cannot be converted from UTF16, so abort.\n");
