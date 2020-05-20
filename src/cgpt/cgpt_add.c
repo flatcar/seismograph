@@ -95,12 +95,12 @@ static int GptSetEntryAttributes(struct drive *drive,
     memcpy(&entry->type, &params->type_guid, sizeof(Guid));
   if (params->label) {
     uint16_t name[36];
-    memcpy(name, entry->name, sizeof(uint16_t)*36);
     if (CGPT_OK != UTF8ToUTF16((uint8_t *)params->label, name,
                                sizeof(entry->name) / sizeof(entry->name[0]))) {
       Error("The label cannot be converted to UTF16.\n");
       return -1;
     }
+    memcpy(entry->name, name, sizeof(uint16_t)*36);
   }
   return 0;
 }
