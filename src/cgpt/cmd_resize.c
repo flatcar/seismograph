@@ -12,7 +12,7 @@
 
 static void Usage(void)
 {
-  printf("\nUsage: %s rezise /dev/blk1\n\n"
+  printf("\nUsage: %s resize /dev/blk1\n\n"
 	 "Resize the given partition if it has free space to grow into.\n"
          "The default minimum size to grow by is 2MB.\n\n"
          "Options:\n"
