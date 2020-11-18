@@ -1,4 +1,6 @@
-# seismograph -- tools for producing CoreOS images
+# seismograph -- tools for producing Container Linux images
+
+![C/C++ CI](https://github.com/kinvolk/seismograph/workflows/C/C++%20CI/badge.svg)
 
 ## cgpt
 
