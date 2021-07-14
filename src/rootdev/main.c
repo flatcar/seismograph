@@ -126,10 +126,15 @@ int main(int argc, char **argv) {
   if (flag_major || flag_minor) {
     root_dev = makedev(flag_major, flag_minor);
   } else {
-    /* Yields the containing dev_t in st_dev. */
-    if (stat(flag_path, &path_stat) != 0)
-      err(1, "Cannot stat(%s)", flag_path);
-    root_dev = path_stat.st_dev;
+    root_dev = rootdev_devt_from_mountpoint(flag_path);
+    /* First search by mount point which works for btrfs and normal file systems,
+       then fall back to old behavior for propper error reporting */
+    if (root_dev == 0) {
+      /* Yields the containing dev_t in st_dev. */
+      if (stat(flag_path, &path_stat) != 0)
+        err(1, "Cannot stat(%s)", flag_path);
+      root_dev = path_stat.st_dev;
+    }
   }
 
   path[0] = '\0';
