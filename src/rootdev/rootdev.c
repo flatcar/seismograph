@@ -219,6 +219,82 @@ void rootdev_strip_partition(char *dst, size_t len) {
   *part = '\0';
 }
 
+/* Using stat does not work on btrfs because there is no 1-to-1 mapping
+ * to a single backing block device in general but we can get the first
+ * backing block device by looking in /proc/mounts
+ */
+#define PATH_SIZE 256
+dev_t rootdev_devt_from_mountpoint(const char *orig_path) {
+  FILE *mounts;
+  char path[PATH_SIZE];
+  char * line = NULL;
+  char * mountpoint = NULL;
+  char * devname = NULL;
+  size_t len = 0;
+  dev_t dev = 0;
+
+  mounts = fopen("/proc/mounts", "r");
+  if (mounts == NULL)
+        return 0;
+
+  strncpy(path, orig_path, PATH_SIZE - 1);
+  path[PATH_SIZE - 1] = '\0';
+  /* strip trailing "/" but not if it's the only character */
+  for (int i=strlen(path)-1; i>0; i--) {
+    if (path[i] == '/') {
+      path[i] = '\0';
+    } else {
+      break;
+    }
+  }
+
+  while (getline(&line, &len, mounts) != -1) {
+        devname = strtok(line, " ");
+        if (devname == NULL)
+          continue;
+        mountpoint = strtok(NULL, " ");
+        if (mountpoint == NULL)
+          continue;
+        if (strcmp(mountpoint, path) == 0) {
+          char devname_buf[PATH_SIZE];
+          char devname_parent[PATH_SIZE];
+          char sys_block_path[PATH_SIZE * 3];
+          char *tmp;
+
+          if (readlink(devname, (char *)&devname_buf, PATH_SIZE - 1) != -1) {
+            devname_buf[PATH_SIZE - 1] = '\0';
+            devname = devname_buf;
+          }
+          devname = strtok(devname, "/");
+          if (devname == NULL)
+            break;
+          /* skip to last part of the path */
+          while (tmp=strtok(NULL,"/"), tmp != NULL) {
+            devname = tmp;
+          }
+
+          strncpy(devname_parent, devname, PATH_SIZE - 1);
+          devname_parent[PATH_SIZE - 1] = '\0';
+          rootdev_strip_partition(devname_parent, PATH_SIZE);
+          if (strcmp(devname_parent, devname) == 0) {
+            snprintf(sys_block_path, PATH_SIZE * 3, "/sys/block/%s/dev", devname);
+          } else {
+            snprintf(sys_block_path, PATH_SIZE * 3, "/sys/block/%s/%s/dev", devname_parent, devname);
+          }
+          dev = devt_from_file(sys_block_path);
+          /* Note: devname may hold a reference to buf and must not be used from now on, delete it */
+          devname = NULL;
+          break;
+        }
+  }
+
+  if (line)
+      free(line);
+  fclose(mounts);
+
+  return dev;
+}
+
 int rootdev_symlink_active(const char *path) {
   int ret = 0;
   /* Don't overwrite an existing link. */

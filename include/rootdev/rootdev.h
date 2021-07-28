@@ -95,6 +95,7 @@ const char *rootdev_get_partition(const char *dst, size_t len);
 void rootdev_strip_partition(char *dst, size_t len);
 int rootdev_symlink_active(const char *path);
 int rootdev_create_devices(const char *name, dev_t dev, bool symlink);
+dev_t rootdev_devt_from_mountpoint(const char *path);
 
 #ifdef __cplusplus
 }  /* extern "C" */
