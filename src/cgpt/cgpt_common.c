@@ -1056,7 +1056,7 @@ static void fill_part(struct legacy_partition *part, enum mbr_type type,
    * values that parted does. May help avoid boot issues on some systems. */
   if (type == MBR_PROTECTIVE) {
     part->f_chs[0] = 0x00;
-    part->f_chs[1] = 0x01;
+    part->f_chs[1] = 0x02;
     part->f_chs[2] = 0x00;
   } else {
     compute_chs(part->f_chs, starting_lba);
@@ -1064,7 +1064,7 @@ static void fill_part(struct legacy_partition *part, enum mbr_type type,
   part->f_lba = htole32((uint32_t)starting_lba);
 
   if (type == MBR_PROTECTIVE) {
-    part->l_chs[0] = 0xfe;
+    part->l_chs[0] = 0xff;
     part->l_chs[1] = 0xff;
     part->l_chs[2] = 0xff;
   } else {
