@@ -232,6 +232,7 @@ dev_t rootdev_devt_from_mountpoint(const char *orig_path) {
   char * devname = NULL;
   size_t len = 0;
   dev_t dev = 0;
+  struct stat path_stat;
 
   mounts = fopen("/proc/mounts", "r");
   if (mounts == NULL)
@@ -256,34 +257,11 @@ dev_t rootdev_devt_from_mountpoint(const char *orig_path) {
         if (mountpoint == NULL)
           continue;
         if (strcmp(mountpoint, path) == 0) {
-          char devname_buf[PATH_SIZE];
-          char devname_parent[PATH_SIZE];
-          char sys_block_path[PATH_SIZE * 3];
-          char *tmp;
+          /* stat follows symlinks */
+          if (stat(devname, &path_stat) != 0)
+            err(1, "Cannot stat(%s)", devname);
 
-          if (readlink(devname, (char *)&devname_buf, PATH_SIZE - 1) != -1) {
-            devname_buf[PATH_SIZE - 1] = '\0';
-            devname = devname_buf;
-          }
-          devname = strtok(devname, "/");
-          if (devname == NULL)
-            break;
-          /* skip to last part of the path */
-          while (tmp=strtok(NULL,"/"), tmp != NULL) {
-            devname = tmp;
-          }
-
-          strncpy(devname_parent, devname, PATH_SIZE - 1);
-          devname_parent[PATH_SIZE - 1] = '\0';
-          rootdev_strip_partition(devname_parent, PATH_SIZE);
-          if (strcmp(devname_parent, devname) == 0) {
-            snprintf(sys_block_path, PATH_SIZE * 3, "/sys/block/%s/dev", devname);
-          } else {
-            snprintf(sys_block_path, PATH_SIZE * 3, "/sys/block/%s/%s/dev", devname_parent, devname);
-          }
-          dev = devt_from_file(sys_block_path);
-          /* Note: devname may hold a reference to buf and must not be used from now on, delete it */
-          devname = NULL;
+          dev = path_stat.st_rdev;
           break;
         }
   }
